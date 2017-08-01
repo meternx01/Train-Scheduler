@@ -18,7 +18,7 @@ function train(name, destination, frequency, firstDeparture, dateAdded){
 	this.firstDeparture = firstDeparture;
 	this.dateAdded=dateAdded;
 }
-
+var numberOfRecords = 0;
 // On button event to pull data from the form
 $(".buttonSubmit").click(function(event){
 	// stop from empty form fill
@@ -74,6 +74,8 @@ function outputToTable(sv){
 	$("#schedule-table > tbody").append("<tr><td>"+ sv.name + "</td><td>" + sv.destination +
 	"</td><td>" + sv.frequency + "</td><td>" + momentTime.format("HH:mm") + "</td><td>" +
 	nextTrain + "</td></tr>");
+	//DOM For total records
+	$(".panel-Footer").html("Number of Trains: " + numberOfRecords);
 }
 
 // Function that returns if the time AND the frequency is valid
@@ -93,25 +95,27 @@ function inputValid(time, number){
 
 // Function that display from Firebase when a entry is added
 database.ref().orderByChild("dateAdded").on("child_added", function(snapshot) {
+	numberOfRecords++;
 	// write to the table
 	outputToTable(snapshot.val());
 });
 
 // Function that loads existing data from Firebase at page load
-	database.ref().once("value", function(snapshot) {
-		// clear the table
-		$("#schedule-table > tbody").empty();
-		// iterate through each entry in Firebase
-		snapshot.forEach(function(childNodes){
-			// write to table
-			outputToTable(childNodes.val());
-		})
-
-	});
+database.ref().once("value", function(snapshot) {
+	numberOfRecords = 0;
+	// clear the table
+	$("#schedule-table > tbody").empty();
+	// iterate through each entry in Firebase
+	snapshot.forEach(function(childNodes){
+		numberOfRecords++;
+		// write to table
+		outputToTable(childNodes.val());
+	})
+});
 
 // Function to write an entry to Firebase
 function pushToFirebase(trainObject)
 {
 	// Push the entry object as a child to Firebase
-	 database.ref().push(trainObject);
+	database.ref().push(trainObject);
 }
